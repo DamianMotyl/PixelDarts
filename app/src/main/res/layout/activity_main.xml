@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="#EEEEEE">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="#FFFFFF"
+        android:padding="5dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GRACZE:"
+            android:textStyle="bold"
+            android:layout_marginRight="10dp" />
+
+        <Button android:id="@+id/btnP1" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="1" />
+        <Button android:id="@+id/btnP2" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="2" />
+        <Button android:id="@+id/btnP3" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="3" />
+        <Button android:id="@+id/btnP4" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="4" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutAllScores"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="10dp"
+        android:layout_marginTop="5dp"
+        android:background="#CFD8DC" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="10dp"
+        android:layout_marginTop="5dp">
+
+        <TextView
+            android:id="@+id/tvCurrentPlayer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gracz 1"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#1976D2" />
+
+        <TextView
+            android:id="@+id/tvScore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="501"
+            android:textSize="80sp"
+            android:textStyle="bold"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/tvTurnCurrent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tura: _ , _ , _"
+            android:textSize="20sp"
+            android:textColor="#546E7A" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="5dp">
+
+        <Button
+            android:id="@+id/btnDouble"
+            android:layout_width="0dp"
+            android:layout_weight="0.7"
+            android:layout_height="60dp"
+            android:text="x2"
+            android:background="#D1D1D1" />
+
+        <Button
+            android:id="@+id/btnTriple"
+            android:layout_width="0dp"
+            android:layout_weight="0.7"
+            android:layout_height="60dp"
+            android:text="x3"
+            android:background="#D1D1D1" />
+
+        <Button
+            android:id="@+id/btnMiss"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="60dp"
+            android:text="MISS"
+            android:textColor="#FFFFFF"
+            android:background="#E53935" />
+
+        <Button
+            android:id="@+id/btnConfirmTurn"
+            android:layout_width="0dp"
+            android:layout_weight="1.3"
+            android:layout_height="60dp"
+            android:text="ZATWIERDŹ"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="10dp"
+        android:background="#FFFFFF">
+
+        <GridLayout
+            android:id="@+id/gridPoints"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="4"
+            android:padding="5dp" />
+    </ScrollView>
+
+</LinearLayout>
