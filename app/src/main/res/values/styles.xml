@@ -1,0 +1,10 @@
+<resources>
+
+    <style name="ModernButton">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textStyle">bold</item>
+
+        <item name="android:padding">10dp</item>
+    </style>
+
+</resources>

@@ -2,10 +2,12 @@ package com.emdez.pixeldarts
 
 import android.os.Bundle
 import android.widget.*
+import androidx.gridlayout.widget.GridLayout
 import android.view.ViewGroup
 import android.graphics.Color
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatButton
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,8 +30,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupGameButtons() {
-        findViewById<Button>(R.id.btnConfirmTurn).setOnClickListener { confirmTurn() }
-        findViewById<Button>(R.id.btnMiss).setOnClickListener { addPoints(0) }
+        findViewById<androidx.appcompat.widget.AppCompatButton>(R.id.btnConfirmTurn).setOnClickListener { confirmTurn() }
+        findViewById<AppCompatButton>(R.id.btnMiss).setOnClickListener { addPoints(0) }
+        findViewById<AppCompatButton>(R.id.btnUndo).setOnClickListener { undoLastThrow() }
 
         // Wybór liczby graczy
         findViewById<Button>(R.id.btnP1).setOnClickListener { resetGame(1) }
@@ -42,14 +45,29 @@ class MainActivity : AppCompatActivity() {
         val btnT = findViewById<Button>(R.id.btnTriple)
 
         btnD.setOnClickListener {
-            activeMultiplier = 2
-            btnD.setBackgroundColor(Color.YELLOW)
-            btnT.setBackgroundColor(Color.LTGRAY)
+            if (activeMultiplier == 2) {
+                // WYŁĄCZ
+                activeMultiplier = 1
+                btnD.setBackgroundResource(R.drawable.btn_blue)
+            } else {
+                // WŁĄCZ x2
+                activeMultiplier = 2
+                btnD.setBackgroundResource(R.drawable.btn_yellow)
+                btnT.setBackgroundResource(R.drawable.btn_blue)
+            }
         }
+
         btnT.setOnClickListener {
-            activeMultiplier = 3
-            btnT.setBackgroundColor(Color.YELLOW)
-            btnD.setBackgroundColor(Color.LTGRAY)
+            if (activeMultiplier == 3) {
+                // WYŁĄCZ
+                activeMultiplier = 1
+                btnT.setBackgroundResource(R.drawable.btn_blue)
+            } else {
+                // WŁĄCZ x3
+                activeMultiplier = 3
+                btnT.setBackgroundResource(R.drawable.btn_yellow)
+                btnD.setBackgroundResource(R.drawable.btn_blue)
+            }
         }
     }
 
@@ -72,10 +90,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun undoLastThrow() {
+        if (currentTurnThrows.isNotEmpty()) {
+            currentTurnThrows.removeAt(currentTurnThrows.size - 1)
+            updateUI()
+        } else {
+            Toast.makeText(this, "Brak rzutów do cofnięcia", Toast.LENGTH_SHORT).show()
+        }
+    }
     private fun resetMultipliers() {
         activeMultiplier = 1
-        findViewById<Button>(R.id.btnDouble).setBackgroundColor(Color.LTGRAY)
-        findViewById<Button>(R.id.btnTriple).setBackgroundColor(Color.LTGRAY)
+        findViewById<Button>(R.id.btnDouble).setBackgroundResource(R.drawable.btn_blue)
+        findViewById<Button>(R.id.btnTriple).setBackgroundResource(R.drawable.btn_blue)
     }
 
     private fun updateUI() {
@@ -94,7 +120,7 @@ class MainActivity : AppCompatActivity() {
         for (i in 0 until numPlayers) {
             val tv = TextView(this)
             tv.text = " P${i+1}: ${scores[i]} "
-            tv.textSize = 18f
+            tv.textSize = 30f
             tv.setPadding(15, 10, 15, 10)
             if (i == currentPlayerIndex) {
                 tv.setTextColor(Color.RED)
@@ -103,7 +129,7 @@ class MainActivity : AppCompatActivity() {
             layoutAllScores.addView(tv)
         }
 
-        findViewById<Button>(R.id.btnConfirmTurn).isEnabled = currentTurnThrows.isNotEmpty()
+        findViewById<Button>(R.id.btnConfirmTurn).isEnabled = currentTurnThrows.size == MAX_THROWS
     }
 
     private fun generatePointsGrid() {
@@ -114,11 +140,13 @@ class MainActivity : AppCompatActivity() {
         for (value in pointsValues) {
             val b = Button(this)
             b.text = value.toString()
+            b.textSize = 28f
+            b.setBackgroundResource(R.drawable.btn_round)
             val params = GridLayout.LayoutParams()
             params.width = 0
             params.height = 130
             params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-            params.setMargins(2, 2, 2, 2)
+            params.setMargins(4, 4, 4, 4)
             b.layoutParams = params
             b.setOnClickListener { addPoints(value) }
             grid.addView(b)
