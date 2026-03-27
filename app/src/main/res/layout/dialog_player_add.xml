@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="24dp"
+    android:background="#FFFFFF"
+    android:gravity="center">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dodaj nowego gracza"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#1976D2"
+        android:layout_marginBottom="20dp" />
+
+    <!-- 🔥 INPUT -->
+    <EditText
+        android:id="@+id/editPlayerName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Wpisz nazwę gracza"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:background="@android:drawable/edit_text"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- ✅ PRZYCISK DODAJ -->
+    <Button
+        android:id="@+id/btnAddPlayer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dodaj"
+        android:backgroundTint="#4CAF50"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"/>
+
+    <!-- ❌ ANULUJ -->
+    <Button
+        android:id="@+id/btnCancel"
+        android:text="Anuluj"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#FF5252"
+        android:layout_marginTop="16dp"
+        style="@style/Widget.AppCompat.Button.Borderless"/>
+
+</LinearLayout>

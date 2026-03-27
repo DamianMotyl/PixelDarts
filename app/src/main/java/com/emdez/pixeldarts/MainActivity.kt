@@ -24,6 +24,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val playersList = intent.getStringArrayListExtra("PLAYERS_LIST") ?: arrayListOf("Gracz 1")
+        resetGame(playersList.size)
+
         setupGameButtons()
         generatePointsGrid()
         updateUI()
@@ -31,7 +34,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupGameButtons() {
         findViewById<androidx.appcompat.widget.AppCompatButton>(R.id.btnConfirmTurn).setOnClickListener { confirmTurn() }
-        findViewById<AppCompatButton>(R.id.btnMiss).setOnClickListener { addPoints(0) }
+        findViewById<AppCompatButton>(R.id.btnMiss).setOnClickListener { addMisses() }
         findViewById<AppCompatButton>(R.id.btnUndo).setOnClickListener { undoLastThrow() }
 
         // Wybór liczby graczy
@@ -176,6 +179,16 @@ class MainActivity : AppCompatActivity() {
         scores = MutableList(p) { 301 }
         currentTurnThrows.clear()
         resetMultipliers()
+        updateUI()
+    }
+
+    private fun addMisses() {
+        currentTurnThrows.clear() // 👈 usuwa stare rzuty
+
+        repeat(MAX_THROWS) {
+            currentTurnThrows.add(0)
+        }
+
         updateUI()
     }
 }

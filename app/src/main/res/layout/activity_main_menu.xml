@@ -1,62 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:gravity="center"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center_horizontal"
     android:padding="16dp"
-    android:background="#ECEFF1">
+    android:background="#FFFFFF">
 
-    <TextView
-        android:id="@+id/tvTitle"
-        android:text="Pixel Darts"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:textColor="#1976D2"
+    <ImageView
+        android:id="@+id/ivLogo"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="100dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/darts_logo" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnStartGame"
+        style="@style/ModernButton"
+        android:text="Nowa Gra"
+        android:background="@drawable/btn_blue"
+        android:textSize="20sp"
+        android:layout_width="400dp"
+        android:layout_height="100dp"
+        android:layout_marginBottom="80dp"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnNewPlayer"
+        style="@style/ModernButton"
+        android:text="Dodaj Gracza"
+        android:background="@drawable/btn_blue"
+        android:textSize="20sp"
+        android:layout_width="400dp"
+        android:layout_height="100dp"
         android:layout_marginBottom="40dp"/>
 
-    <TextView
-        android:text="Wybierz liczbę graczy:"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:layout_marginBottom="20dp"/>
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-        <Button
-            android:id="@+id/btnPlayers1"
-            android:text="1"
-            android:layout_width="80dp"
-            android:layout_height="60dp"
-            android:layout_margin="8dp"/>
-
-        <Button
-            android:id="@+id/btnPlayers2"
-            android:text="2"
-            android:layout_width="80dp"
-            android:layout_height="60dp"
-            android:layout_margin="8dp"/>
-
-        <Button
-            android:id="@+id/btnPlayers3"
-            android:text="3"
-            android:layout_width="80dp"
-            android:layout_height="60dp"
-            android:layout_margin="8dp"/>
-
-        <Button
-            android:id="@+id/btnPlayers4"
-            android:text="4"
-            android:layout_width="80dp"
-            android:layout_height="60dp"
-            android:layout_margin="8dp"/>
-    </LinearLayout>
 
 </LinearLayout>
