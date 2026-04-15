@@ -23,40 +23,23 @@
             android:layout_marginRight="10dp" />
 
         <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnEndGame"
             style="@style/ModernButton"
-            android:id="@+id/btnP1"
-            android:background="@drawable/btn_blue"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="20dp"
             android:layout_height="wrap_content"
-            android:text="1" />
+            android:layout_marginRight="100dp"
+            android:layout_weight="1"
+            android:background="@drawable/btn_red"
+            android:text="Koniec gry" />
 
         <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnAddAnotherPlayer"
             style="@style/ModernButton"
-            android:id="@+id/btnP2"
-            android:background="@drawable/btn_blue"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="2" />
-
-        <androidx.appcompat.widget.AppCompatButton
-            style="@style/ModernButton"
-            android:id="@+id/btnP3"
+            android:layout_weight="1"
             android:background="@drawable/btn_blue"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="3" />
-
-        <androidx.appcompat.widget.AppCompatButton
-            style="@style/ModernButton"
-            android:id="@+id/btnP4"
-            android:background="@drawable/btn_blue"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="4" />
+            android:text="Dodaj gracza" />
 
     </LinearLayout>
 

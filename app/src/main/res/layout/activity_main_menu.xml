@@ -9,7 +9,7 @@
 
     <ImageView
         android:id="@+id/ivLogo"
-        android:layout_width="match_parent"
+        android:layout_width="439dp"
         android:layout_height="300dp"
         android:layout_marginTop="40dp"
         android:layout_marginBottom="100dp"
@@ -29,7 +29,7 @@
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnNewPlayer"
         style="@style/ModernButton"
-        android:text="Dodaj Gracza"
+        android:text="Gracze"
         android:background="@drawable/btn_blue"
         android:textSize="20sp"
         android:layout_width="400dp"

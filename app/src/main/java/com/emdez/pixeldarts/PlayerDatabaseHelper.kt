@@ -42,4 +42,9 @@ class PlayerDatabaseHelper(context: Context) :
         cursor.close()
         return list
     }
+
+    fun deletePlayer(name: String) {
+        val db = writableDatabase
+        db.delete("players", "name = ?", arrayOf(name))
+    }
 }

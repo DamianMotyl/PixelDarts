@@ -3,7 +3,6 @@ package com.emdez.pixeldarts
 import android.os.Bundle
 import android.widget.*
 import androidx.gridlayout.widget.GridLayout
-import android.view.ViewGroup
 import android.graphics.Color
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
@@ -12,24 +11,41 @@ import androidx.appcompat.widget.AppCompatButton
 class MainActivity : AppCompatActivity() {
 
     private var scores = mutableListOf(301) // Zmienione na 301
+
+    private var playersList: ArrayList<String>? = null
     private var currentPlayerIndex = 0
     private var numPlayers = 1
     private var currentTurnThrows = mutableListOf<Int>()
     private val MAX_THROWS = 3
-
-    // Nowa zmienna dla mnożnika
     private var activeMultiplier = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val playersList = intent.getStringArrayListExtra("PLAYERS_LIST") ?: arrayListOf("Gracz 1")
-        resetGame(playersList.size)
+        // NAJPIERW pobierz listę
+        playersList = intent.getStringArrayListExtra("PLAYERS_LIST")
+
+        // POTEM sprawdź i ustaw punkty
+        if (!playersList.isNullOrEmpty()) {
+            numPlayers = playersList!!.size
+            setupInitialScores(numPlayers)
+        } else {
+            playersList = arrayListOf("Gracz 1")
+            numPlayers = 1
+            setupInitialScores(1)
+        }
 
         setupGameButtons()
         generatePointsGrid()
         updateUI()
+    }
+
+
+    private fun setupInitialScores(count: Int) {
+        scores = MutableList(count) { 301 }
+        currentPlayerIndex = 0
+        currentTurnThrows.clear()
     }
 
     private fun setupGameButtons() {
@@ -38,10 +54,13 @@ class MainActivity : AppCompatActivity() {
         findViewById<AppCompatButton>(R.id.btnUndo).setOnClickListener { undoLastThrow() }
 
         // Wybór liczby graczy
-        findViewById<Button>(R.id.btnP1).setOnClickListener { resetGame(1) }
-        findViewById<Button>(R.id.btnP2).setOnClickListener { resetGame(2) }
-        findViewById<Button>(R.id.btnP3).setOnClickListener { resetGame(3) }
-        findViewById<Button>(R.id.btnP4).setOnClickListener { resetGame(4) }
+        findViewById<Button>(R.id.btnEndGame).setOnClickListener {
+            showEndGameDialog() }
+        findViewById<Button>(R.id.btnAddAnotherPlayer).setOnClickListener {TODO() }
+
+        val btnAddPlayer = findViewById<Button>(R.id.btnAddAnotherPlayer)
+        btnAddPlayer.isEnabled = false
+        btnAddPlayer.alpha = 0.5f
 
         // Obsługa przycisków Double i Triple
         val btnD = findViewById<Button>(R.id.btnDouble)
@@ -74,6 +93,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    private fun showEndGameDialog() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Zakończyć grę?")
+            .setMessage("Gracz ${playersList?.get(currentPlayerIndex)} prowadzi.\nNa pewno zakończyć?")
+            .setPositiveButton("Tak") { _, _ ->
+                resetGame()
+            }
+            .setNegativeButton("Nie", null)
+            .show()
+    }
     private fun addPoints(baseValue: Int) {
         if (currentTurnThrows.size < MAX_THROWS) {
             val finalValue = baseValue * activeMultiplier
@@ -113,20 +143,22 @@ class MainActivity : AppCompatActivity() {
         val tvTurn = findViewById<TextView>(R.id.tvTurnCurrent)
         val layoutAllScores = findViewById<LinearLayout>(R.id.layoutAllScores)
 
-        tvPlayer.text = "Gracz ${currentPlayerIndex + 1}"
+        tvPlayer.text = playersList?.get(currentPlayerIndex) ?: "Gracz"
         tvScore.text = scores[currentPlayerIndex].toString()
 
         val rzutyText = currentTurnThrows.joinToString(" | ")
         tvTurn.text = "Tura: $rzutyText (Suma: ${currentTurnThrows.sum()})"
 
+        // Odświeżamy górny pasek wszystkich wyników
         layoutAllScores.removeAllViews()
-        for (i in 0 until numPlayers) {
+        playersList?.forEachIndexed { i, name ->
             val tv = TextView(this)
-            tv.text = " P${i+1}: ${scores[i]} "
-            tv.textSize = 30f
-            tv.setPadding(15, 10, 15, 10)
+            // Wyświetlamy imię i punkty
+            tv.text = " $name: ${scores[i]} "
+            tv.textSize = 18f
+            tv.setPadding(10, 5, 10, 5)
             if (i == currentPlayerIndex) {
-                tv.setTextColor(Color.RED)
+                tv.setTextColor(Color.parseColor("#1976D2")) // Niebieski aktywny
                 tv.setTypeface(null, Typeface.BOLD)
             }
             layoutAllScores.addView(tv)
@@ -173,13 +205,14 @@ class MainActivity : AppCompatActivity() {
         updateUI()
     }
 
-    private fun resetGame(p: Int) {
-        numPlayers = p
+    private fun resetGame() {
+        // 1. Czyścimy dane lokalne (opcjonalnie, bo finish() i tak zamknie aktywność)
         currentPlayerIndex = 0
-        scores = MutableList(p) { 301 }
         currentTurnThrows.clear()
-        resetMultipliers()
-        updateUI()
+        scores.clear()
+
+        // 2. Zamykamy MainActivity i wracamy do MainMenuActivity
+        finish()
     }
 
     private fun addMisses() {

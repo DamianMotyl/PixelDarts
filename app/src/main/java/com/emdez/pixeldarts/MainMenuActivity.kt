@@ -26,7 +26,8 @@ class MainMenuActivity : AppCompatActivity() {
 
         // Obsługa przycisku dodawania gracza
         btnNewPlayer?.setOnClickListener {
-            addNewPlayerDialog()
+            val intent = Intent(this, PlayersMenuActivity::class.java)
+            startActivity(intent)
         }
     }
 
