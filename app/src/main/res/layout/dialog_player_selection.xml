@@ -30,6 +30,40 @@
         android:orientation="vertical"
         android:padding="16dp"/>
 
+    <TextView
+        android:text="WYBIERZ GRĘ"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#1976D2"
+        android:layout_marginBottom="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn301"
+            android:layout_width="120dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginRight="25dp"
+            android:background="@drawable/btn_blue"
+            android:backgroundTint="@null"
+            android:text="301" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn501"
+            android:layout_width="120dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/btn_blue"
+            android:backgroundTint="@null"
+            android:text="501" />
+    </LinearLayout>
+
     <Button
         android:id="@+id/btnStartGame"
         android:text="START"
@@ -37,5 +71,7 @@
         android:layout_height="60dp"
         android:layout_marginTop="20dp"
         android:background="@drawable/btn_blue"/>
+
+
 
 </LinearLayout>

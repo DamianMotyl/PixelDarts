@@ -19,12 +19,17 @@ class MainActivity : AppCompatActivity() {
     private val MAX_THROWS = 3
     private var activeMultiplier = 1
 
+    private var gameMode = 301
+
+    private val winners = mutableSetOf<Int>() // indeksy graczy, którzy wygrali
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         // NAJPIERW pobierz listę
         playersList = intent.getStringArrayListExtra("PLAYERS_LIST")
+        gameMode = intent.getIntExtra("GAME_MODE", 301)
 
         // POTEM sprawdź i ustaw punkty
         if (!playersList.isNullOrEmpty()) {
@@ -43,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun setupInitialScores(count: Int) {
-        scores = MutableList(count) { 301 }
+        scores = MutableList(count){gameMode}
         currentPlayerIndex = 0
         currentTurnThrows.clear()
     }
@@ -53,7 +58,6 @@ class MainActivity : AppCompatActivity() {
         findViewById<AppCompatButton>(R.id.btnMiss).setOnClickListener { addMisses() }
         findViewById<AppCompatButton>(R.id.btnUndo).setOnClickListener { undoLastThrow() }
 
-        // Wybór liczby graczy
         findViewById<Button>(R.id.btnEndGame).setOnClickListener {
             showEndGameDialog() }
         findViewById<Button>(R.id.btnAddAnotherPlayer).setOnClickListener {TODO() }
@@ -154,7 +158,14 @@ class MainActivity : AppCompatActivity() {
         playersList?.forEachIndexed { i, name ->
             val tv = TextView(this)
             // Wyświetlamy imię i punkty
-            tv.text = " $name: ${scores[i]} "
+            val isWinner = winners.contains(i)
+
+            tv.text = if (isWinner) {
+                "🏆 $name: WYGRANY"
+            } else {
+                "$name: ${scores[i]}"
+            }
+          //  tv.text = " $name: ${scores[i]} "
             tv.textSize = 18f
             tv.setPadding(10, 5, 10, 5)
             if (i == currentPlayerIndex) {
@@ -167,6 +178,17 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnConfirmTurn).isEnabled = currentTurnThrows.size == MAX_THROWS
     }
 
+    private fun showWinnerDialog(playerName: String) {
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("🏆 WYGRANA!")
+            .setMessage("$playerName wygrał rundę!\nGratulacje 🎯")
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .show()
+    }
     private fun generatePointsGrid() {
         val grid = findViewById<GridLayout>(R.id.gridPoints)
         grid.removeAllViews()
@@ -196,13 +218,64 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Fura! (Bust)", Toast.LENGTH_SHORT).show()
         }
 
-        if (scores[currentPlayerIndex] == 0) {
-            Toast.makeText(this, "BRAWO! WYGRANA!", Toast.LENGTH_LONG).show()
+        if (scores[currentPlayerIndex] == 0 && !winners.contains(currentPlayerIndex))  {
+            winners.add(currentPlayerIndex)
+            val winnerName = playersList?.get(currentPlayerIndex) ?: "Gracz"
+            showWinnerDialogAnimated(winnerName)
+        }
+        currentTurnThrows.clear()
+        moveToNextPlayer()
+        updateUI()
+    }
+
+    private fun showWinnerDialogAnimated(playerName: String) {
+
+        val view = layoutInflater.inflate(R.layout.dialog_winner, null)
+
+        val tvName = view.findViewById<TextView>(R.id.tvName)
+        tvName.text = playerName
+
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setView(view)
+            .setCancelable(false)
+            .create()
+
+        dialog.show()
+
+        val root = view.findViewById<LinearLayout>(R.id.winnerRoot)
+
+        root.animate()
+            .scaleX(1f)
+            .scaleY(1f)
+            .alpha(1f)
+            .setDuration(300)
+            .withEndAction {
+
+                // bounce efekt
+                root.animate()
+                    .translationYBy(-20f)
+                    .setDuration(200)
+                    .withEndAction {
+                        root.animate()
+                            .translationYBy(20f)
+                            .setDuration(200)
+                            .start()
+                    }
+                    .start()
+            }
+            .start()
+    }
+
+    private fun moveToNextPlayer() {
+
+        if (winners.size == numPlayers) {
+            Toast.makeText(this, "KONIEC GRY - wszyscy wygrali!", Toast.LENGTH_LONG).show()
+            return
         }
 
-        currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers
-        currentTurnThrows.clear()
-        updateUI()
+        do {
+            currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers
+        } while (winners.contains(currentPlayerIndex))
     }
 
     private fun resetGame() {

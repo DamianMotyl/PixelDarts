@@ -2,6 +2,7 @@ package com.emdez.pixeldarts
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.gridlayout.widget.GridLayout // Ważne: używamy wersji z AndroidX
@@ -11,9 +12,37 @@ class MainMenuActivity : AppCompatActivity() {
     // Używamy LinkedHashSet, aby zachować kolejność wybierania graczy
     private val selectedPlayers = mutableSetOf<String>()
 
+    private var logoClickCount = 0
+    private val handler = Handler()
+    private var resetRunnable: Runnable? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_menu)
+
+        val logo = findViewById<ImageView>(R.id.ivLogo)
+
+        logo.setOnClickListener {
+
+            logoClickCount++
+
+            // usuń poprzedni reset
+            resetRunnable?.let { handler.removeCallbacks(it) }
+
+            // nowy reset po 2 sekundach
+            resetRunnable = Runnable {
+                logoClickCount = 0
+            }
+
+            handler.postDelayed(resetRunnable!!, 2000)
+
+            if (logoClickCount == 5) {
+                logoClickCount = 0
+                handler.removeCallbacks(resetRunnable!!)
+
+                startActivity(Intent(this, RankingActivity::class.java))
+            }
+        }
 
         val btnStart = findViewById<Button>(R.id.btnStartGame)
         // Używamy bezpiecznego wywołania ?, na wypadek gdyby przycisku nie było w XML
@@ -150,32 +179,4 @@ class MainMenuActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun addNewPlayerDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_player_add, null)
-
-        // Ważne: findViewById wywołujemy na dialogView!
-        val input = dialogView.findViewById<EditText>(R.id.editPlayerName)
-        val btnAdd = dialogView.findViewById<Button>(R.id.btnAddPlayer)
-        val btnCancel = dialogView.findViewById<Button>(R.id.btnCancel)
-
-        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
-            .setView(dialogView)
-            .create()
-
-        val db = PlayerDatabaseHelper(this)
-
-        btnAdd.setOnClickListener {
-            val name = input.text.toString().trim()
-            if (name.isNotEmpty()) {
-                db.addPlayer(name)
-                generatePlayersButtons() // Odświeżamy listę
-                dialog.dismiss()
-            } else {
-                input.error = "Podaj imię!"
-            }
-        }
-
-        btnCancel.setOnClickListener { dialog.dismiss() }
-        dialog.show()
-    }
 }
