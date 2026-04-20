@@ -121,10 +121,10 @@ class PlayerDatabaseHelper(context: Context) :
     }
 
     fun getGameHistory(): List<GameHistory> {
-
         val list = mutableListOf<GameHistory>()
         val db = readableDatabase
 
+        // Zapytanie wybierające ID gry, datę, tryb oraz imię zwycięzcy
         val query = """
         SELECT g.id, g.date, g.mode, r.player_name
         FROM games g
@@ -135,19 +135,74 @@ class PlayerDatabaseHelper(context: Context) :
 
         val cursor = db.rawQuery(query, null)
 
+        // Formater daty (klasyczny SimpleDateFormat działa idealnie na API 19)
+        val sdf = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
+
         while (cursor.moveToNext()) {
+            val gameId = cursor.getLong(0)
+            val rawDate = cursor.getString(1) // Tu są milisekundy w formie Stringa
+            val mode = cursor.getInt(2)
+            val winnerName = cursor.getString(3)
+
+            // Konwersja milisekund na czytelną datę
+            val formattedDate = try {
+                if (rawDate != null) {
+                    val dateObject = java.util.Date(rawDate.toLong())
+                    sdf.format(dateObject)
+                } else {
+                    "Brak daty"
+                }
+            } catch (e: Exception) {
+                "Data nieznana"
+            }
+
             list.add(
                 GameHistory(
-                    cursor.getLong(0),
-                    cursor.getString(1),
-                    cursor.getInt(2),
-                    cursor.getString(3)
+                    gameId,
+                    formattedDate,
+                    mode,
+                    winnerName
                 )
             )
         }
 
         cursor.close()
         return list
+    }
+    // =====================
+    // NOWE: Zapis graczy na starcie
+    // =====================
+    fun addInitialPlayersToGame(gameId: Long, players: List<String>, startingScore: Int) {
+        val db = writableDatabase
+        for (player in players) {
+            val values = ContentValues()
+            values.put("game_id", gameId)
+            values.put("player_name", player)
+            values.put("score", startingScore) // na starcie np. 301
+            values.put("is_winner", 0)
+            db.insert("game_results", null, values)
+        }
+    }
+
+    // =====================
+    // NOWE: Aktualizacja wyniku na koniec/wygraną
+    // =====================
+    fun updatePlayerResult(gameId: Long, player: String, finalScore: Int, isWinner: Boolean) {
+        val db = writableDatabase
+        val values = ContentValues()
+
+        values.put("score", finalScore)
+        if (isWinner) {
+            values.put("is_winner", 1)
+        }
+
+        // Aktualizujemy konkretnego gracza w konkretnej grze
+        db.update(
+            "game_results",
+            values,
+            "game_id = ? AND player_name = ?",
+            arrayOf(gameId.toString(), player)
+        )
     }
 
     fun getWins(player: String): Int {
@@ -190,6 +245,9 @@ class PlayerDatabaseHelper(context: Context) :
         return list.sortedByDescending { it.wins }
     }
 }
+
+
+
 
 // MODEL RANKINGU
 data class PlayerStats(
