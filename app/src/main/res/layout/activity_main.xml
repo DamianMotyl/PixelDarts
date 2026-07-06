@@ -77,7 +77,6 @@
             android:textStyle="bold"
             android:textColor="#1976D2" />
 
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -183,12 +182,34 @@
         android:layout_marginTop="10dp"
         android:background="#FFFFFF">
 
-        <androidx.gridlayout.widget.GridLayout
-            android:id="@+id/gridPoints"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="5dp"
-            app:columnCount="5" />
+            android:orientation="vertical"
+            android:padding="5dp">
+
+            <androidx.gridlayout.widget.GridLayout
+                android:id="@+id/gridPoints"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:columnCount="5" />
+
+            <!-- 🎯 TUTAJ: Przycisk wyciągnięty pod siatkę. Rozciąga się niezależnie i nie psuje wyglądu kafelków 25 i 50 -->
+            <Button
+                android:id="@+id/btnStartingSet"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_marginBottom="4dp"
+                android:background="@drawable/btn_blue"
+                android:text="ZESTAW STARTOWY (25, 5, 1)"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
     </ScrollView>
 
 </LinearLayout>

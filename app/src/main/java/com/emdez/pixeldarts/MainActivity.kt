@@ -24,7 +24,6 @@ class MainActivity : AppCompatActivity() {
     private val db by lazy { PlayerDatabaseHelper(this) }
     private var currentGameId: Long = -1
 
-    // Przechowuje indeksy graczy w kolejności, w jakiej kończyli grę (indeks 0 na liście = 1 miejsce itd.)
     private val winners = mutableListOf<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +61,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<AppCompatButton>(R.id.btnMiss).setOnClickListener { addMisses() }
         findViewById<AppCompatButton>(R.id.btnUndo).setOnClickListener { undoLastThrow() }
 
+        // 🎯 Odszukiwanie przycisku ulokowanego pod siatką w XML
+        findViewById<Button>(R.id.btnStartingSet)?.setOnClickListener { addStartingSet() }
+
         findViewById<Button>(R.id.btnEndGame).setOnClickListener { showEndGameDialog() }
 
         val btnAddPlayer = findViewById<Button>(R.id.btnAddAnotherPlayer)
@@ -91,6 +93,18 @@ class MainActivity : AppCompatActivity() {
                 btnT.setBackgroundResource(R.drawable.btn_yellow)
                 btnD.setBackgroundResource(R.drawable.btn_blue)
             }
+        }
+    }
+
+    private fun addStartingSet() {
+        if (currentTurnThrows.isEmpty()) {
+            resetMultipliers()
+            currentTurnThrows.add(25)
+            currentTurnThrows.add(5)
+            currentTurnThrows.add(1)
+            updateUI()
+        } else {
+            Toast.makeText(this, "Zestaw startowy wymaga pustej tury!", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -172,8 +186,6 @@ class MainActivity : AppCompatActivity() {
         layoutAllScores.removeAllViews()
         playersList?.forEachIndexed { i, name ->
             val tv = TextView(this)
-
-            // Szukamy, które miejsce zajął dany gracz (+1 bo indeksy od 0)
             val placeInGame = winners.indexOf(i) + 1
 
             tv.text = if (placeInGame > 0) {
@@ -193,7 +205,6 @@ class MainActivity : AppCompatActivity() {
             layoutAllScores.addView(tv)
         }
 
-        // Zatwierdzenie tury aktywne, jeśli rzucono chociaż raz
         findViewById<Button>(R.id.btnConfirmTurn).isEnabled = currentTurnThrows.isNotEmpty()
     }
 
@@ -202,6 +213,7 @@ class MainActivity : AppCompatActivity() {
         grid.removeAllViews()
         val pointsValues = (0..20).toList() + listOf(25, 50)
 
+        // Generowanie wyłącznie czystych kafelków punktowych (0-50)
         for (value in pointsValues) {
             val b = Button(this)
             b.text = value.toString()
@@ -222,19 +234,15 @@ class MainActivity : AppCompatActivity() {
         val sum = currentTurnThrows.sum()
         val currentPlayerName = playersList?.get(currentPlayerIndex) ?: "Gracz"
 
-        // 1. Sprawdzenie rzutów i odejmowanie
         if (scores[currentPlayerIndex] - sum >= 0) {
             scores[currentPlayerIndex] -= sum
 
-            // Sprawdzenie czy gracz właśnie ukończył grę
             if (scores[currentPlayerIndex] == 0 && !winners.contains(currentPlayerIndex)) {
                 winners.add(currentPlayerIndex)
                 val assignedPlace = winners.size
 
-                // Zapisujemy uzyskane miejsce w bazie danych
                 db.updatePlayerResult(currentGameId, currentPlayerName, 0, assignedPlace)
 
-                // Wielka animacja zwycięzcy tylko dla 1. miejsca
                 if (assignedPlace == 1) {
                     showWinnerDialogAnimated(currentPlayerName)
                 } else {
@@ -245,7 +253,6 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Fura! (Bust)", Toast.LENGTH_SHORT).show()
         }
 
-        // 2. Logika końca gry lub przejścia dalej
         if (checkIsGameOver()) {
             endGameSession()
         } else {
@@ -256,12 +263,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkIsGameOver(): Boolean {
-        // Wszystkie osoby skończyły grę
         if (winners.size == numPlayers) return true
-
-        // W rozgrywce wieloosobowej kończymy, kiedy na placu boju zostanie tylko 1 osoba (bo automatycznie zajmuje ostatnie miejsce)
         if (numPlayers > 1 && winners.size == numPlayers - 1) return true
-
         return false
     }
 
@@ -305,7 +308,6 @@ class MainActivity : AppCompatActivity() {
         val startIndex = currentPlayerIndex
         do {
             currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers
-            // Przełączaj gracza tak długo, aż trafisz na kogoś, kto jeszcze NIE skończył (brak w liście winners)
         } while (winners.contains(currentPlayerIndex) && currentPlayerIndex != startIndex)
     }
 
@@ -327,7 +329,6 @@ class MainActivity : AppCompatActivity() {
     private fun endGameSession() {
         Toast.makeText(this, "KONIEC GRY", Toast.LENGTH_LONG).show()
 
-        // Dla każdego gracza, który NIE ukończył gry przed czasem, przypisujemy ostatnie wolne miejsce
         for (i in 0 until numPlayers) {
             if (!winners.contains(i)) {
                 val name = playersList?.get(i) ?: "Gracz"
