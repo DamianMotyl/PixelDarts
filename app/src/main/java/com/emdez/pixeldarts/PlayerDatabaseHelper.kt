@@ -5,12 +5,18 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
+data class GamePlayerResult(
+    val playerName: String,
+    val score: Int,
+    val place: Int
+)
+
+
+
 class PlayerDatabaseHelper(context: Context) :
-    SQLiteOpenHelper(context, "players.db", null, 1) {
+    SQLiteOpenHelper(context, "players.db", null, 2) {
 
     override fun onCreate(db: SQLiteDatabase) {
-
-        // GRACZE
         db.execSQL("""
             CREATE TABLE players (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,7 +24,6 @@ class PlayerDatabaseHelper(context: Context) :
             )
         """)
 
-        // GRA (jedna sesja)
         db.execSQL("""
             CREATE TABLE games (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,14 +32,13 @@ class PlayerDatabaseHelper(context: Context) :
             )
         """)
 
-        // WYNIKI GRY
         db.execSQL("""
             CREATE TABLE game_results (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 game_id INTEGER,
                 player_name TEXT,
                 score INTEGER,
-                is_winner INTEGER
+                place INTEGER
             )
         """)
     }
@@ -46,9 +50,6 @@ class PlayerDatabaseHelper(context: Context) :
         onCreate(db)
     }
 
-    // =====================
-    // PLAYERS
-    // =====================
     fun addPlayer(name: String) {
         val db = writableDatabase
         val values = ContentValues()
@@ -60,11 +61,9 @@ class PlayerDatabaseHelper(context: Context) :
         val list = mutableListOf<String>()
         val db = readableDatabase
         val cursor = db.rawQuery("SELECT name FROM players", null)
-
         while (cursor.moveToNext()) {
             list.add(cursor.getString(0))
         }
-
         cursor.close()
         return list
     }
@@ -74,37 +73,13 @@ class PlayerDatabaseHelper(context: Context) :
         db.delete("players", "name = ?", arrayOf(name))
     }
 
-    // =====================
-    // GAME START
-    // =====================
     fun addGame(mode: Int): Long {
         val db = writableDatabase
         val values = ContentValues()
-
         values.put("date", System.currentTimeMillis().toString())
         values.put("mode", mode)
-
         return db.insert("games", null, values)
     }
-
-    // =====================
-    // GAME RESULTS
-    // =====================
-    fun addGameResult(gameId: Long, player: String, score: Int, isWinner: Boolean) {
-        val db = writableDatabase
-        val values = ContentValues()
-
-        values.put("game_id", gameId)
-        values.put("player_name", player)
-        values.put("score", score)
-        values.put("is_winner", if (isWinner) 1 else 0)
-
-        db.insert("game_results", null, values)
-    }
-
-    // =====================
-    // STATYSTYKI
-    // =====================
 
     fun getGamesPlayed(player: String): Int {
         val db = readableDatabase
@@ -112,11 +87,9 @@ class PlayerDatabaseHelper(context: Context) :
             "SELECT COUNT(*) FROM game_results WHERE player_name = ?",
             arrayOf(player)
         )
-
         cursor.moveToFirst()
         val count = cursor.getInt(0)
         cursor.close()
-
         return count
     }
 
@@ -124,133 +97,95 @@ class PlayerDatabaseHelper(context: Context) :
         val list = mutableListOf<GameHistory>()
         val db = readableDatabase
 
-        // Zapytanie wybierające ID gry, datę, tryb oraz imię zwycięzcy
-        val query = """
-        SELECT g.id, g.date, g.mode, r.player_name
-        FROM games g
-        JOIN game_results r ON g.id = r.game_id
-        WHERE r.is_winner = 1
-        ORDER BY g.id DESC
-    """
-
-        val cursor = db.rawQuery(query, null)
-
-        // Formater daty (klasyczny SimpleDateFormat działa idealnie na API 19)
+        val gamesQuery = "SELECT id, date, mode FROM games ORDER BY id DESC"
+        val gamesCursor = db.rawQuery(gamesQuery, null)
         val sdf = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
 
-        while (cursor.moveToNext()) {
-            val gameId = cursor.getLong(0)
-            val rawDate = cursor.getString(1) // Tu są milisekundy w formie Stringa
-            val mode = cursor.getInt(2)
-            val winnerName = cursor.getString(3)
+        while (gamesCursor.moveToNext()) {
+            val gameId = gamesCursor.getLong(0)
+            val rawDate = gamesCursor.getString(1)
+            val mode = gamesCursor.getInt(2)
 
-            // Konwersja milisekund na czytelną datę
             val formattedDate = try {
-                if (rawDate != null) {
-                    val dateObject = java.util.Date(rawDate.toLong())
-                    sdf.format(dateObject)
-                } else {
-                    "Brak daty"
-                }
-            } catch (e: Exception) {
-                "Data nieznana"
-            }
+                if (rawDate != null) sdf.format(java.util.Date(rawDate.toLong())) else "Brak daty"
+            } catch (e: Exception) { "Data nieznana" }
 
-            list.add(
-                GameHistory(
-                    gameId,
-                    formattedDate,
-                    mode,
-                    winnerName
+            val resultsList = mutableListOf<GamePlayerResult>()
+            val resultsQuery = """
+                SELECT player_name, score, place 
+                FROM game_results 
+                WHERE game_id = ? 
+                ORDER BY place ASC, score ASC
+            """
+            val resultsCursor = db.rawQuery(resultsQuery, arrayOf(gameId.toString()))
+
+            while (resultsCursor.moveToNext()) {
+                resultsList.add(
+                    GamePlayerResult(
+                        playerName = resultsCursor.getString(0),
+                        score = resultsCursor.getInt(1),
+                        place = resultsCursor.getInt(2)
+                    )
                 )
-            )
-        }
+            }
+            resultsCursor.close()
 
-        cursor.close()
+            list.add(GameHistory(gameId, formattedDate, mode, resultsList))
+        }
+        gamesCursor.close()
         return list
     }
-    // =====================
-    // NOWE: Zapis graczy na starcie
-    // =====================
+
     fun addInitialPlayersToGame(gameId: Long, players: List<String>, startingScore: Int) {
         val db = writableDatabase
         for (player in players) {
             val values = ContentValues()
             values.put("game_id", gameId)
             values.put("player_name", player)
-            values.put("score", startingScore) // na starcie np. 301
-            values.put("is_winner", 0)
+            values.put("score", startingScore)
+            values.put("place", 0)
             db.insert("game_results", null, values)
         }
     }
 
-    // =====================
-    // NOWE: Aktualizacja wyniku na koniec/wygraną
-    // =====================
-    fun updatePlayerResult(gameId: Long, player: String, finalScore: Int, isWinner: Boolean) {
+    fun updatePlayerResult(gameId: Long, player: String, finalScore: Int, place: Int) {
         val db = writableDatabase
         val values = ContentValues()
-
         values.put("score", finalScore)
-        if (isWinner) {
-            values.put("is_winner", 1)
-        }
-
-        // Aktualizujemy konkretnego gracza w konkretnej grze
-        db.update(
-            "game_results",
-            values,
-            "game_id = ? AND player_name = ?",
-            arrayOf(gameId.toString(), player)
-        )
+        values.put("place", place)
+        db.update("game_results", values, "game_id = ? AND player_name = ?", arrayOf(gameId.toString(), player))
     }
 
     fun getWins(player: String): Int {
         val db = readableDatabase
         val cursor = db.rawQuery(
-            "SELECT COUNT(*) FROM game_results WHERE player_name = ? AND is_winner = 1",
+            "SELECT COUNT(*) FROM game_results WHERE player_name = ? AND place = 1",
             arrayOf(player)
         )
-
         cursor.moveToFirst()
         val count = cursor.getInt(0)
         cursor.close()
-
         return count
     }
 
     fun getWinRate(player: String): Double {
         val played = getGamesPlayed(player)
         if (played == 0) return 0.0
-
         val wins = getWins(player)
         return (wins.toDouble() / played.toDouble()) * 100.0
     }
 
-    // =====================
-    // RANKING
-    // =====================
-    fun getRanking(): List<PlayerStats> {
-        val list = mutableListOf<PlayerStats>()
+    fun getRanking(): List<PlayerRankingStats> {
+        val list = mutableListOf<PlayerRankingStats>()
         val players = getPlayers()
-
         for (p in players) {
-            val wins = getWins(p)
-            val played = getGamesPlayed(p)
-            val winrate = getWinRate(p)
-
-            list.add(PlayerStats(p, wins, played, winrate))
+            list.add(PlayerRankingStats(p, getWins(p), getGamesPlayed(p), getWinRate(p)))
         }
-
         return list.sortedByDescending { it.wins }
     }
 }
 
-
-
-
-// MODEL RANKINGU
-data class PlayerStats(
+data class PlayerRankingStats(
     val name: String,
     val wins: Int,
     val played: Int,

@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class RankingAdapter(
-    private val list: List<PlayerStats>
+    private val list: List<PlayerRankingStats> // 🎯 Tutaj zmienione na PlayerRankingStats
 ) : RecyclerView.Adapter<RankingAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -25,7 +25,6 @@ class RankingAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-
         val p = list[position]
 
         holder.pos.text = "${position + 1}."

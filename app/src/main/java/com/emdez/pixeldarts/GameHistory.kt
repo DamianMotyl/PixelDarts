@@ -4,5 +4,5 @@ data class GameHistory(
     val gameId: Long,
     val date: String,
     val mode: Int,
-    val winner: String
+    val playersResults: List<GamePlayerResult>
 )

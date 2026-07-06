@@ -10,14 +10,10 @@ import androidx.gridlayout.widget.GridLayout
 
 class MainMenuActivity : AppCompatActivity() {
 
-    // Używamy LinkedHashSet, aby zachować kolejność wybierania graczy
     private val selectedPlayers = mutableSetOf<String>()
-
     private var logoClickCount = 0
     private val handler = Handler(Looper.getMainLooper())
     private var resetRunnable: Runnable? = null
-
-    // Domyślny tryb gry
     private var selectedMode = 301
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,10 +25,8 @@ class MainMenuActivity : AppCompatActivity() {
         logo.setOnClickListener {
             logoClickCount++
 
-            // usuń poprzedni reset
             resetRunnable?.let { handler.removeCallbacks(it) }
 
-            // nowy reset po 2 sekundach
             resetRunnable = Runnable {
                 logoClickCount = 0
             }
@@ -49,16 +43,18 @@ class MainMenuActivity : AppCompatActivity() {
         val btnStart = findViewById<Button>(R.id.btnStartGame)
         val btnNewPlayer = findViewById<Button>(R.id.btnNewPlayer)
 
-        // Wywołujemy generowanie przycisków w głównym menu (jeśli takie masz)
-        generatePlayersButtons()
-
         btnStart.setOnClickListener { showPlayerSelectionDialog() }
 
-        // Obsługa przycisku dodawania gracza
         btnNewPlayer?.setOnClickListener {
             val intent = Intent(this, PlayersMenuActivity::class.java)
             startActivity(intent)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Odświeża listę przycisków za każdym razem, gdy użytkownik wraca do menu głównego
+        generatePlayersButtons()
     }
 
     private fun showPlayerSelectionDialog() {
@@ -66,8 +62,6 @@ class MainMenuActivity : AppCompatActivity() {
 
         val grid = dialogView.findViewById<GridLayout>(R.id.gridPlayers)
         val btnStart = dialogView.findViewById<Button>(R.id.btnStartGame)
-
-        // Przyciski trybu gry (z Twojego layoutu dialog_player_selection.xml)
         val btn301 = dialogView.findViewById<Button>(R.id.btn301)
         val btn501 = dialogView.findViewById<Button>(R.id.btn501)
 
@@ -75,12 +69,10 @@ class MainMenuActivity : AppCompatActivity() {
             .setView(dialogView)
             .create()
 
-        // Na starcie ustawiamy domyślny wygląd przycisków trybu
         selectedMode = 301
         btn301?.setBackgroundResource(R.drawable.btn_selected)
         btn501?.setBackgroundResource(R.drawable.btn_blue)
 
-        // --- OBSŁUGA WYBORU TRYBU ---
         btn301?.setOnClickListener {
             selectedMode = 301
             btn301.setBackgroundResource(R.drawable.btn_selected)
@@ -96,9 +88,8 @@ class MainMenuActivity : AppCompatActivity() {
         val db = PlayerDatabaseHelper(this)
         val players = db.getPlayers()
 
-        selectedPlayers.clear() // Czyścimy listę przy każdym otwarciu dialogu
+        selectedPlayers.clear()
 
-        // --- GENEROWANIE PRZYCISKÓW GRACZY ---
         for (name in players) {
             val btn = Button(this)
             btn.text = name
@@ -127,7 +118,6 @@ class MainMenuActivity : AppCompatActivity() {
             grid?.addView(btn)
         }
 
-        // --- OBSŁUGA STARTU ---
         btnStart.setOnClickListener {
             if (selectedPlayers.isEmpty()) {
                 Toast.makeText(this, "Wybierz graczy!", Toast.LENGTH_SHORT).show()
@@ -184,13 +174,8 @@ class MainMenuActivity : AppCompatActivity() {
 
     private fun startGame() {
         val intent = Intent(this, MainActivity::class.java)
-
-        // 1. Przekazujemy listę graczy
         intent.putStringArrayListExtra("PLAYERS_LIST", ArrayList(selectedPlayers))
-
-        // 2. Przekazujemy wybrany tryb gry (301 lub 501)
         intent.putExtra("GAME_MODE", selectedMode)
-
         startActivity(intent)
     }
 }
